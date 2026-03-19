@@ -28,11 +28,14 @@ export function SelectContent({ children }: { children: React.ReactNode }) {
       value={value}
       onChange={(e) => onValueChange?.(e.target.value)}
     >
-      {items.map((item) => (
-        <option key={item.props.value} value={item.props.value}>
-          {item.props.children}
-        </option>
-      ))}
+      {items.map((item) => {
+  const props = (item as any).props;
+  return (
+    <option key={props.value} value={props.value}>
+      {props.children}
+    </option>
+  );
+})}
     </select>
   );
 }
