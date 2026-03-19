@@ -1,1 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solar AI 自动报价系统</title>
+  <style>
+    :root {
+      --brand: #0f172a;
+      --brand-2: #1e293b;
+      --accent: #f59e0b;
+      --line: #dbe3ee;
+      --soft: #f8fafc;
+      --text: #0f172a;
+      --muted: #64748b;
+      --danger: #dc2626;
+      --ok: #059669;
+    }
 
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background: #eef2f7;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      min-height: 100vh;
+    }
+
+    .panel {
+      background: #ffffff;
+      border-right: 1px solid var(--line);
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .preview-wrap {
+      padding: 24px;
+      overflow: auto;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+    }
+
+    h1, h2, h3, p { margin: 0; }
+    .title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .sub {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 6px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--brand);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid #cfd8e3;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      outline: none;
+      background: #fff;
+    }
+
+    textarea { resize: vertical; min-height: 72px; }
+    input:focus, textarea:focus, select:focus {
+      border-color: #94a3b8;
+      box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.18);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-primary { background: var(--brand); color: #fff; }
+    .btn-secondary { background: #e2e8f0; color: var(--brand); }
+    .btn-accent { background: var(--accent); color: #111827; }
+
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    .quote-sheet {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: #fff;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      position: relative;
+    }
+
+    .quote-inner {
+      padding: 16mm;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      border-bottom: 3px solid var(--brand);
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+    }
+
+    .logo-box {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .logo-mark {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #f59e0b, #fb7185);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .company-name {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .company-meta {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+      margin-top: 6px;
+    }
+
+    .doc-title {
+      text-align: right;
+    }
+
+    .doc-title h2 {
+      font-size: 30px;
+      margin-bottom: 8px;
+      color: var(--brand);
+      letter-spacing: 0.08em;
+    }
+
+    .doc-badges {
+      display: grid;
+      gap: 4px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .box {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      background: #fff;
+    }
+
+    .box-title {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--brand);
+      margin-bottom: 8px;
+      letter-spacing: 0.04em;
+    }
+
+    .box p {
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .items-table {
+      margin-top: 8px;
+      margin-bottom: 16px;
+    }
+
+    .items-table th {
+      text-align: left;
+      background: var(--brand);
+      color: #fff;
+      font-size: 12px;
+      padding: 10px;
+      border: 1px solid var(--brand);
+    }
+
+    .items-table td {
+      border: 1px solid var(--line);
+      padding: 10px;
+      font-size: 13px;
+      vertical-align: top;
+    }
+
+    .text-right { text-align: right; }
+
+    .totals {
+      width: 320px;
+      margin-left: auto;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+
+    .totals-row {
+      display: grid;
+      grid-template-columns: 1fr 140px;
+    }
+
+    .totals-row div {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+    }
+
+    .totals-row:last-child div { border-bottom: 0; }
+    .totals-row.total div {
+      background: #fff7ed;
+      font-weight: 800;
+      font-size: 15px;
+    }
+
+    .notes, .terms {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 14px;
+    }
+
+    .notes p, .terms p, .terms li {
+      font-size: 12px;
+      line-height: 1.7;
+      color: #334155;
+    }
+
+    .terms ul {
+      margin: 8px 0 0 18px;
+      padding: 0;
+    }
+
+    .footer {
+      margin-top: 18px;
+      padding-top: 12px;
+      border-top: 2px solid var(--brand);
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      background: #ecfeff;
+      color: #155e75;
+      margin-top: 6px;
+    }
+
+    .danger { color: var(--danger); }
+    .ok { color: var(--ok); }
+
+    @media (max-width: 1180px) {
+      .app { grid-template-columns: 1fr; }
+      .panel { border-right: 0; border-bottom: 1px solid var(--line); }
+      .preview-wrap { padding: 10px; }
+      .quote-sheet { transform-origin: top center; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      .panel { display: none !important; }
+      .preview-wrap { padding: 0; }
+      .quote-sheet { box-shadow: none; width: 210mm; min-height: 297mm; }
+      @page { size: A4; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="panel">
+      <div class="card">
+        <div class="title">Solar AI 自动报价系统</div>
+        <p class="sub">左边填资料，右边自动生成报价单。填完后点“打印 / 保存 PDF”即可发客户。</p>
+      </div>
+
+      <div class="card">
+        <div class="section-title">公司信息</div>
+        <div class="grid-2">
+          <div>
+            <label>公司名称</label>
+            <input id="companyName" value="Solar AI" />
+          </div>
+          <div>
+            <label>公司电话</label>
+            <input id="companyPhone" value="021 000 0000" />
+          </div>
+        </div>
+        <div style="margin-top:12px;">
+          <label>公司邮箱</label>
+          <input id="companyEmail" value="hello@solarai.co.nz" />
+        </div>
+        <div style="margin-top:12px;">
+          <label>公司地址</label>
+          <input id="companyAddress" value="Auckland, New Zealand" />
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">客户信息</div>
+        <div class="grid-2">
+          <div>
+            <label>客户姓名</label>
+            <input id="clientName" placeholder="例如：Mr John Smith" />
+          </div>
+          <div>
+            <label>客户电话</label>
+            <input id="clientPhone" placeholder="例如：021 123 4567" />
+          </div>
+        </div>
+        <div style="margin-top:12px;">
+          <label>客户邮箱</label>
+          <input id="clientEmail" placeholder="例如：john@email.com" />
+        </div>
+        <div style="margin-top:12px;">
+          <label>安装地址</label>
+          <textarea id="siteAddress" placeholder="例如：25 Example Street, Auckland"></textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">报价信息</div>
+        <div class="grid-3">
+          <div>
+            <label>报价编号</label>
+            <input id="quoteNo" value="Q-2026-001" />
+          </div>
+          <div>
+            <label>报价日期</label>
+            <input id="quoteDate" type="date" />
+          </div>
+          <div>
+            <label>有效期至</label>
+            <input id="validDate" type="date" />
+          </div>
+        </div>
+        <div class="grid-2" style="margin-top:12px;">
+          <div>
+            <label>GST (%)</label>
+            <input id="gstRate" type="number" value="15" />
+          </div>
+          <div>
+            <label>货币</label>
+            <select id="currency">
+              <option value="NZD">NZD</option>
+              <option value="AUD">AUD</option>
+              <option value="USD">USD</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">产品项目</div>
+        <div class="grid-2">
+          <div>
+            <label>项目 1 名称</label>
+            <input id="item1Name" value="Solar PV System Supply & Installation" />
+          </div>
+          <div>
+            <label>项目 1 数量</label>
+            <input id="item1Qty" type="number" value="1" />
+          </div>
+        </div>
+        <div style="margin-top:12px;">
+          <label>项目 1 描述</label>
+          <textarea id="item1Desc">Includes solar panels, inverter, mounting system, standard installation, testing and commissioning.</textarea>
+        </div>
+        <div style="margin-top:12px;">
+          <label>项目 1 单价</label>
+          <input id="item1Price" type="number" value="12000" />
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--line);margin:16px 0;">
+
+        <div class="grid-2">
+          <div>
+            <label>项目 2 名称</label>
+            <input id="item2Name" value="Battery Storage Option" />
+          </div>
+          <div>
+            <label>项目 2 数量</label>
+            <input id="item2Qty" type="number" value="1" />
+          </div>
+        </div>
+        <div style="margin-top:12px;">
+          <label>项目 2 描述</label>
+          <textarea id="item2Desc">Optional battery storage solution including supply, wiring and integration.</textarea>
+        </div>
+        <div style="margin-top:12px;">
+          <label>项目 2 单价</label>
+          <input id="item2Price" type="number" value="8500" />
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">附加内容</div>
+        <div>
+          <label>备注</label>
+          <textarea id="notes">Final system design is subject to site inspection and distributor approval. Any extra switchboard, trenching or non-standard electrical work may be quoted separately.</textarea>
+        </div>
+        <div style="margin-top:12px;">
+          <label>条款</label>
+          <textarea id="terms">1. Quote valid until the expiry date shown above.
+2. 50% deposit may be required before materials are ordered.
+3. Balance payable on completion unless otherwise agreed.
+4. Delays caused by weather, network approval or customer variations may affect installation date.
+5. Equipment brands may be substituted with equivalent approved products if supply is limited.</textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="btn-row">
+          <button class="btn-primary" onclick="updateQuote()">更新报价</button>
+          <button class="btn-accent" onclick="window.print()">打印 / 保存 PDF</button>
+          <button class="btn-secondary" onclick="resetDemo()">恢复默认</button>
+        </div>
+        <div class="hint">你以后只需要改左边资料。右边会自动更新。想发客户时，点“打印 / 保存 PDF”，然后选择“另存为 PDF”。</div>
+      </div>
+    </aside>
+
+    <main class="preview-wrap">
+      <section class="quote-sheet" id="quoteSheet">
+        <div class="quote-inner">
+          <div class="header">
+            <div>
+              <div class="logo-box">
+                <div class="logo-mark">S</div>
+                <div>
+                  <div class="company-name" id="outCompanyName">Solar AI</div>
+                  <div class="company-meta">
+                    <div id="outCompanyAddress">Auckland, New Zealand</div>
+                    <div id="outCompanyPhone">021 000 0000</div>
+                    <div id="outCompanyEmail">hello@solarai.co.nz</div>
+                  </div>
+                </div>
+              </div>
+              <div class="pill">Solar Quote Proposal</div>
+            </div>
+            <div class="doc-title">
+              <h2>QUOTATION</h2>
+              <div class="doc-badges">
+                <div><strong>Quote No:</strong> <span id="outQuoteNo">Q-2026-001</span></div>
+                <div><strong>Date:</strong> <span id="outQuoteDate"></span></div>
+                <div><strong>Valid Until:</strong> <span id="outValidDate"></span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-grid">
+            <div class="box">
+              <div class="box-title">Prepared For</div>
+              <p><strong id="outClientName">Customer Name</strong></p>
+              <p id="outClientPhone">Phone</p>
+              <p id="outClientEmail">Email</p>
+              <p id="outSiteAddress">Site address</p>
+            </div>
+            <div class="box">
+              <div class="box-title">Project Summary</div>
+              <p>Thank you for the opportunity to provide a quotation for your solar project. Please review the scope, pricing and conditions below.</p>
+              <p style="margin-top:8px;"><strong>Status:</strong> <span class="ok">Ready to proceed</span></p>
+            </div>
+          </div>
+
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th style="width:28px;">#</th>
+                <th>Description</th>
+                <th style="width:70px;">Qty</th>
+                <th style="width:120px;">Unit Price</th>
+                <th style="width:120px;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>
+                  <strong id="outItem1Name">Solar PV System Supply & Installation</strong><br>
+                  <span id="outItem1Desc">Includes solar panels, inverter, mounting system, standard installation, testing and commissioning.</span>
+                </td>
+                <td id="outItem1Qty">1</td>
+                <td class="text-right" id="outItem1Price">NZD 12,000.00</td>
+                <td class="text-right" id="outItem1Total">NZD 12,000.00</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>
+                  <strong id="outItem2Name">Battery Storage Option</strong><br>
+                  <span id="outItem2Desc">Optional battery storage solution including supply, wiring and integration.</span>
+                </td>
+                <td id="outItem2Qty">1</td>
+                <td class="text-right" id="outItem2Price">NZD 8,500.00</td>
+                <td class="text-right" id="outItem2Total">NZD 8,500.00</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="totals">
+            <div class="totals-row"><div>Subtotal</div><div class="text-right" id="outSubtotal">NZD 20,500.00</div></div>
+            <div class="totals-row"><div>GST (<span id="outGstRate">15</span>%)</div><div class="text-right" id="outGst">NZD 3,075.00</div></div>
+            <div class="totals-row total"><div>Total</div><div class="text-right" id="outTotal">NZD 23,575.00</div></div>
+          </div>
+
+          <div class="notes">
+            <div class="box-title">Notes</div>
+            <p id="outNotes">Final system design is subject to site inspection and distributor approval. Any extra switchboard, trenching or non-standard electrical work may be quoted separately.</p>
+          </div>
+
+          <div class="terms">
+            <div class="box-title">Terms & Conditions</div>
+            <div id="outTerms"></div>
+          </div>
+
+          <div class="footer">
+            <div>
+              <strong id="outFooterCompany">Solar AI</strong><br>
+              Solar quotation prepared for customer review.
+            </div>
+            <div style="text-align:right;">
+              Thank you for your business.<br>
+              Please contact us to accept this quotation.
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    function formatMoney(value, currency) {
+      const num = Number(value || 0);
+      return new Intl.NumberFormat('en-NZ', {
+        style: 'currency',
+        currency: currency || 'NZD',
+        minimumFractionDigits: 2
+      }).format(num);
+    }
+
+    function formatDate(value) {
+      if (!value) return '';
+      const d = new Date(value + 'T00:00:00');
+      if (Number.isNaN(d.getTime())) return value;
+      return d.toLocaleDateString('en-NZ', {
+        day: '2-digit', month: '2-digit', year: 'numeric'
+      });
+    }
+
+    function linesToHtml(text) {
+      return (text || '')
+        .split('\n')
+        .filter(Boolean)
+        .map(line => `<p>${escapeHtml(line)}</p>`)
+        .join('');
+    }
+
+    function termsToHtml(text) {
+      const lines = (text || '').split('\n').filter(Boolean);
+      return `<ul>${lines.map(line => `<li>${escapeHtml(line)}</li>`).join('')}</ul>`;
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function updateQuote() {
+      const currency = $('currency').value;
+      const gstRate = Number($('gstRate').value || 0);
+
+      const item1Qty = Number($('item1Qty').value || 0);
+      const item1Price = Number($('item1Price').value || 0);
+      const item2Qty = Number($('item2Qty').value || 0);
+      const item2Price = Number($('item2Price').value || 0);
+
+      const item1Total = item1Qty * item1Price;
+      const item2Total = item2Qty * item2Price;
+      const subtotal = item1Total + item2Total;
+      const gst = subtotal * gstRate / 100;
+      const total = subtotal + gst;
+
+      $('outCompanyName').textContent = $('companyName').value || 'Solar AI';
+      $('outCompanyAddress').textContent = $('companyAddress').value || '';
+      $('outCompanyPhone').textContent = $('companyPhone').value || '';
+      $('outCompanyEmail').textContent = $('companyEmail').value || '';
+      $('outFooterCompany').textContent = $('companyName').value || 'Solar AI';
+
+      $('outClientName').textContent = $('clientName').value || 'Customer Name';
+      $('outClientPhone').textContent = $('clientPhone').value || 'Phone';
+      $('outClientEmail').textContent = $('clientEmail').value || 'Email';
+      $('outSiteAddress').textContent = $('siteAddress').value || 'Site address';
+
+      $('outQuoteNo').textContent = $('quoteNo').value || '';
+      $('outQuoteDate').textContent = formatDate($('quoteDate').value);
+      $('outValidDate').textContent = formatDate($('validDate').value);
+
+      $('outItem1Name').textContent = $('item1Name').value || '';
+      $('outItem1Desc').textContent = $('item1Desc').value || '';
+      $('outItem1Qty').textContent = item1Qty;
+      $('outItem1Price').textContent = formatMoney(item1Price, currency);
+      $('outItem1Total').textContent = formatMoney(item1Total, currency);
+
+      $('outItem2Name').textContent = $('item2Name').value || '';
+      $('outItem2Desc').textContent = $('item2Desc').value || '';
+      $('outItem2Qty').textContent = item2Qty;
+      $('outItem2Price').textContent = formatMoney(item2Price, currency);
+      $('outItem2Total').textContent = formatMoney(item2Total, currency);
+
+      $('outSubtotal').textContent = formatMoney(subtotal, currency);
+      $('outGstRate').textContent = gstRate;
+      $('outGst').textContent = formatMoney(gst, currency);
+      $('outTotal').textContent = formatMoney(total, currency);
+
+      $('outNotes').innerHTML = linesToHtml($('notes').value);
+      $('outTerms').innerHTML = termsToHtml($('terms').value);
+    }
+
+    function resetDemo() {
+      $('companyName').value = 'Solar AI';
+      $('companyPhone').value = '021 000 0000';
+      $('companyEmail').value = 'hello@solarai.co.nz';
+      $('companyAddress').value = 'Auckland, New Zealand';
+      $('clientName').value = '';
+      $('clientPhone').value = '';
+      $('clientEmail').value = '';
+      $('siteAddress').value = '';
+      $('quoteNo').value = 'Q-2026-001';
+      $('gstRate').value = '15';
+      $('currency').value = 'NZD';
+      $('item1Name').value = 'Solar PV System Supply & Installation';
+      $('item1Qty').value = '1';
+      $('item1Desc').value = 'Includes solar panels, inverter, mounting system, standard installation, testing and commissioning.';
+      $('item1Price').value = '12000';
+      $('item2Name').value = 'Battery Storage Option';
+      $('item2Qty').value = '1';
+      $('item2Desc').value = 'Optional battery storage solution including supply, wiring and integration.';
+      $('item2Price').value = '8500';
+      $('notes').value = 'Final system design is subject to site inspection and distributor approval. Any extra switchboard, trenching or non-standard electrical work may be quoted separately.';
+      $('terms').value = '1. Quote valid until the expiry date shown above.\n2. 50% deposit may be required before materials are ordered.\n3. Balance payable on completion unless otherwise agreed.\n4. Delays caused by weather, network approval or customer variations may affect installation date.\n5. Equipment brands may be substituted with equivalent approved products if supply is limited.';
+
+      const today = new Date();
+      const valid = new Date();
+      valid.setDate(today.getDate() + 14);
+      $('quoteDate').value = today.toISOString().slice(0, 10);
+      $('validDate').value = valid.toISOString().slice(0, 10);
+      updateQuote();
+    }
+
+    resetDemo();
+  </script>
+</body>
+</html>
